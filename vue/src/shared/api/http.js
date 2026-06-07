@@ -1,3 +1,26 @@
+const TOKEN_KEY = 'douyin_token'
+
+export function getAuthHeaders(extra = {}) {
+  const headers = { ...extra }
+  const token = localStorage.getItem(TOKEN_KEY)
+  if (token) {
+    headers.Authorization = `Bearer ${token}`
+  }
+  return headers
+}
+
+function parseResponse(json, httpStatus) {
+  const code = json.code
+  const isSuccess = code === 200 || code === '200'
+  return {
+    isSuccess,
+    message: json.message || json.msg || '',
+    data: json.data ?? null,
+    code,
+    httpStatus,
+  }
+}
+
 /**
  * 抖音 Spring Boot 统一响应：{ code, msg, data }，code 为 "200" 表示成功
  */
@@ -7,17 +30,12 @@ export async function request(path, options = {}) {
     method,
     headers: {
       'Content-Type': 'application/json',
-      ...headers,
+      ...getAuthHeaders(headers),
     },
   }
 
   if (body !== undefined) {
     config.body = JSON.stringify(body)
-  }
-
-  const token = localStorage.getItem('douyin_token')
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`
   }
 
   const res = await fetch(path, config)
@@ -30,15 +48,33 @@ export async function request(path, options = {}) {
       message: '服务器响应异常',
       data: null,
       code: res.status,
+      httpStatus: res.status,
     }
   }
 
-  const code = json.code
-  const isSuccess = code === 200 || code === '200'
-  return {
-    isSuccess,
-    message: json.message || json.msg || '',
-    data: json.data ?? null,
-    code,
+  return parseResponse(json, res.status)
+}
+
+/** multipart/form-data 上传（勿手动设置 Content-Type） */
+export async function uploadRequest(path, formData, options = {}) {
+  const res = await fetch(path, {
+    method: options.method || 'POST',
+    headers: getAuthHeaders(options.headers || {}),
+    body: formData,
+  })
+
+  let json
+  try {
+    json = await res.json()
+  } catch {
+    return {
+      isSuccess: false,
+      message: '服务器响应异常',
+      data: null,
+      code: res.status,
+      httpStatus: res.status,
+    }
   }
+
+  return parseResponse(json, res.status)
 }

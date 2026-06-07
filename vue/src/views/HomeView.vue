@@ -35,7 +35,7 @@ const features = [
   { label: '用户注册 / 登录 / 注销', status: 'done', statusText: '已可用' },
   { label: '视频推荐（按点赞排序 + 去重）', status: 'api', statusText: '后端已就绪' },
   { label: '视频点赞 / 取消点赞', status: 'api', statusText: '后端已就绪' },
-  { label: '视频上传 / 我的视频 / 删除', status: 'api', statusText: '后端已就绪' },
+  { label: '视频上传 / 我的视频 / 删除', status: 'done', statusText: '前端已可用' },
   { label: '推荐流上下滑动播放', status: 'pending', statusText: '开发中' },
 ]
 </script>
